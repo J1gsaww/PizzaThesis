@@ -95,13 +95,39 @@
       const frameWidth = frame.width;
       const frameHeight = frame.height;
 
+      // Set canvas to the size of the frame
       canvas.width = frameWidth;
       canvas.height = frameHeight;
 
-      // Draw video frame resized to match frame.png
-      context.drawImage(video, 0, 0, frameWidth, frameHeight);
+      const videoWidth = video.videoWidth;
+      const videoHeight = video.videoHeight;
+
+      // คำนวณ crop ตรงกลางจากกล้องให้ได้อัตราส่วนเท่า frame
+      const frameAspect = frameWidth / frameHeight;
+      const videoAspect = videoWidth / videoHeight;
+
+      let cropWidth, cropHeight, sx, sy;
+
+      if (videoAspect > frameAspect) {
+        // กล้องกว้างเกินไป: ครอปแนวนอน
+        cropHeight = videoHeight;
+        cropWidth = cropHeight * frameAspect;
+        sx = (videoWidth - cropWidth) / 2;
+        sy = 0;
+      } else {
+        // กล้องสูงเกินไป: ครอปแนวตั้ง
+        cropWidth = videoWidth;
+        cropHeight = cropWidth / frameAspect;
+        sx = 0;
+        sy = (videoHeight - cropHeight) / 2;
+      }
+
+      // Draw cropped video portion
+      context.drawImage(video, sx, sy, cropWidth, cropHeight, 0, 0, frameWidth, frameHeight);
+      // Draw frame overlay
       context.drawImage(frame, 0, 0, frameWidth, frameHeight);
 
+      // Export image
       const dataURL = canvas.toDataURL('image/png');
       const link = document.createElement('a');
       link.href = dataURL;

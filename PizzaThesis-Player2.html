@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Phone Dial Pad</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
   <style>
@@ -34,14 +35,17 @@
     }
     .container {
       background: white;
-      width: 300px;
-      height: 550px;
+      width: 100%;
+      max-width: 300px;
+      height: 90%;
+      max-height: 550px;
       border-radius: 30px;
       box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
       display: flex;
       flex-direction: column;
       overflow: hidden;
-    }
+      }
+
     .chat-header {
       background: #ffd252;
       padding-top: 20px;
@@ -163,6 +167,7 @@
     }
     .dots-container {
       position: absolute;
+      top: calc(50% + 200px);
       bottom: 40px;
       width: 100%;
       display: flex;
@@ -253,8 +258,8 @@
       height: 32px;
     }
     ::placeholder {
-    color: white;
-    opacity: 1; 
+      color: white;
+      opacity: 1;
     }
     .call-screen {
       position: absolute;
@@ -268,6 +273,27 @@
       background: #ff6200;
       z-index: 10;
     }
+    @media (max-width: 400px) {
+  .pad button {
+  width: 50px;
+  height: 50px;
+  font-size: 16px;
+  }
+
+  .display {
+    font-size: 20px;
+  }
+
+  .call-btn {
+  width: 50px;
+  height: 50px;
+  font-size: 18px;
+}
+  .delete-btn {
+  left: calc(50% + 30px);
+  }
+}
+
   </style>
 </head>
 <body>
@@ -387,7 +413,7 @@
     }
 
     function call() {
-      if (input === "0616304012") {
+      if (input === "1213072025") {
         startCallScreen();
       } else {
         document.getElementById("errorMsg").textContent = "Can't find this number";

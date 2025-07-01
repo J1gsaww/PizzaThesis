@@ -9,18 +9,20 @@
       margin: 0;
       padding: 0;
       height: 100%;
-      overflow: hidden;
-      background-color: #003fa3;
+      background-color: #2156A6;
       font-family: sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
 
     .camera-container {
       position: relative;
-      width: 100%;
-      height: 100%;
+      background-color: black;
+      overflow: hidden;
     }
 
-    video {
+    video, .frame-overlay {
       position: absolute;
       top: 0;
       left: 0;
@@ -31,12 +33,6 @@
     }
 
     .frame-overlay {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      object-fit: contain;
       z-index: 1;
       pointer-events: none;
     }
@@ -63,9 +59,9 @@
 </head>
 <body>
 
-<div class="camera-container">
+<div class="camera-container" id="container">
   <video id="video" autoplay playsinline></video>
-  <img src="Frame.png" class="frame-overlay" alt="Frame" />
+  <img id="frame" src="Frame.png" class="frame-overlay" alt="Frame" />
   <div class="button-container">
     <button onclick="takePhoto()">📷 Take Selfie</button>
   </div>
@@ -75,7 +71,16 @@
 
 <script>
   const video = document.getElementById('video');
+  const frameImg = document.getElementById('frame');
+  const container = document.getElementById('container');
 
+  // ตั้งขนาด container ให้พอดีกับขนาดจริงของ frame
+  frameImg.onload = () => {
+    container.style.width = frameImg.naturalWidth + 'px';
+    container.style.height = frameImg.naturalHeight + 'px';
+  };
+
+  // กล้อง
   navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" }, audio: false })
     .then(stream => {
       video.srcObject = stream;
@@ -85,55 +90,44 @@
       console.error(err);
     });
 
+  // ถ่ายรูป
   function takePhoto() {
     const canvas = document.getElementById('canvas');
     const context = canvas.getContext('2d');
-    const frame = new Image();
-    frame.src = "Frame.png";
+    const frameWidth = frameImg.naturalWidth;
+    const frameHeight = frameImg.naturalHeight;
 
-    frame.onload = () => {
-      const frameWidth = frame.width;
-      const frameHeight = frame.height;
+    canvas.width = frameWidth;
+    canvas.height = frameHeight;
 
-      // Set canvas to the size of the frame
-      canvas.width = frameWidth;
-      canvas.height = frameHeight;
+    const videoWidth = video.videoWidth;
+    const videoHeight = video.videoHeight;
 
-      const videoWidth = video.videoWidth;
-      const videoHeight = video.videoHeight;
+    const frameAspect = frameWidth / frameHeight;
+    const videoAspect = videoWidth / videoHeight;
 
-      // คำนวณ crop ตรงกลางจากกล้องให้ได้อัตราส่วนเท่า frame
-      const frameAspect = frameWidth / frameHeight;
-      const videoAspect = videoWidth / videoHeight;
+    let cropWidth, cropHeight, sx, sy;
 
-      let cropWidth, cropHeight, sx, sy;
+    if (videoAspect > frameAspect) {
+      cropHeight = videoHeight;
+      cropWidth = cropHeight * frameAspect;
+      sx = (videoWidth - cropWidth) / 2;
+      sy = 0;
+    } else {
+      cropWidth = videoWidth;
+      cropHeight = cropWidth / frameAspect;
+      sx = 0;
+      sy = (videoHeight - cropHeight) / 2;
+    }
 
-      if (videoAspect > frameAspect) {
-        // กล้องกว้างเกินไป: ครอปแนวนอน
-        cropHeight = videoHeight;
-        cropWidth = cropHeight * frameAspect;
-        sx = (videoWidth - cropWidth) / 2;
-        sy = 0;
-      } else {
-        // กล้องสูงเกินไป: ครอปแนวตั้ง
-        cropWidth = videoWidth;
-        cropHeight = cropWidth / frameAspect;
-        sx = 0;
-        sy = (videoHeight - cropHeight) / 2;
-      }
+    context.drawImage(video, sx, sy, cropWidth, cropHeight, 0, 0, frameWidth, frameHeight);
+    context.drawImage(frameImg, 0, 0, frameWidth, frameHeight);
 
-      // Draw cropped video portion
-      context.drawImage(video, sx, sy, cropWidth, cropHeight, 0, 0, frameWidth, frameHeight);
-      // Draw frame overlay
-      context.drawImage(frame, 0, 0, frameWidth, frameHeight);
-
-      // Export image
-      const dataURL = canvas.toDataURL('image/png');
-      const link = document.createElement('a');
-      link.href = dataURL;
-      link.download = 'selfie.png';
-      link.click();
-    };
+    const dataURL = canvas.toDataURL('image/png');
+    const link = document.createElement('a');
+    link.href = dataURL;
+    link.download = 'selfie.png';
+    link.click();
   }
 </script>
 

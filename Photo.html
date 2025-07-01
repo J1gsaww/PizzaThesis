@@ -28,6 +28,7 @@
       height: 100%;
       object-fit: cover;
       z-index: 0;
+      transform: scaleX(-1);
     }
 
     .frame-overlay {
@@ -167,7 +168,11 @@
         sy = (videoHeight - cropHeight) / 2;
       }
 
-      context.drawImage(video, sx, sy, cropWidth, cropHeight, 0, 0, frameWidth, frameHeight);
+      context.save();
+    context.translate(frameWidth, 0);
+    context.scale(-1, 1);
+    context.drawImage(video, sx, sy, cropWidth, cropHeight, 0, 0, frameWidth, frameHeight);
+    context.restore();
       context.drawImage(frameImg, 0, 0, frameWidth, frameHeight);
 
       const dataURL = canvas.toDataURL('image/png');
